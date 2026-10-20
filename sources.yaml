@@ -61,7 +61,13 @@ sources:
   - {name: Growth Memo (Kevin Indig), url: "https://www.growth-memo.com/feed", tier: practitioner, channels: [seo, ai]}
   - {name: Marie Haynes, url: "https://www.mariehaynes.com/feed/", tier: practitioner, channels: [seo, ai]}
   - {name: GSQi (Glenn Gabe), url: "https://www.gsqi.com/marketing-blog/feed/", tier: practitioner, channels: [seo]}
-  - {name: Lily Ray, url: "https://lilyraynyc.substack.com/feed", tier: practitioner, channels: [seo, ai]}
+  # Substack blocks GitHub's servers (403), so this falls back to Google News headlines.
+  - name: Lily Ray
+    url: "https://lilyraynyc.substack.com/feed"
+    fallback_url: "https://news.google.com/rss/search?q=site:lilyraynyc.substack.com&hl=en-US&gl=US&ceid=US:en"
+    tier: practitioner
+    channels: [seo, ai]
+    strip_title_suffix: " - Lily Ray | Substack"
 
   # ---------- Paid Media ----------
   - {name: Google Ads & Commerce Blog, url: "https://blog.google/products/ads-commerce/rss/", tier: primary, channels: [paid_media]}
