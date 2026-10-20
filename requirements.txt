@@ -1,0 +1,5 @@
+anthropic>=0.60
+feedparser>=6.0
+requests>=2.32
+trafilatura>=2.0
+PyYAML>=6.0
