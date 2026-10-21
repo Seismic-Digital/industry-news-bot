@@ -388,6 +388,32 @@ def collect_new_items(config, state, now, test_limit=None):
     return new_items
 
 
+def enrich_item(item, article):
+    """Fill in title, author, date, image, and reading time from the full article page."""
+    if item.get("slug_title") and article.get("title"):
+        item["title"] = article["title"]
+    item["author"] = item["author"] or article.get("author") or ""
+    item["published"] = item["published"] or article.get("date")
+    image = article.get("image") or item.get("image")
+    item["image"] = image if image and image.startswith("https://") else None
+    words = len((article.get("text") or "").split())
+    item["read_minutes"] = max(1, round(words / 230)) if words > 150 else None
+
+
+def post_sample(config, client, slack, source_name):
+    """Post the newest article from one source to its first channel, to preview formatting. State is untouched."""
+    source = next(src for src in config["sources"] if src["name"] == source_name)
+    item = fetch_source(source)[0]
+    channel = source["channels"][0]
+    item.update(source=source["name"], channel=channel, score=4)
+    article = fetch_article(item["url"])
+    enrich_item(item, article)
+    summary = summarize(client, config, item, article)
+    tz = ZoneInfo(config["settings"]["timezone"])
+    slack.post(config["channels"][channel]["slack_channel"], item["title"], article_blocks(item, summary, tz, False))
+    log(f"Posted sample [{channel}] {item['title']}")
+
+
 def run(config, state, client, slack, now, test_limit=None):
     s = config["settings"]
     tz = ZoneInfo(s["timezone"])
@@ -432,14 +458,7 @@ def run(config, state, client, slack, now, test_limit=None):
             under_cap = counts.get(channel, 0) < s["daily_realtime_cap"]
             if breaking or (score >= s["realtime_score"] and under_cap):
                 article = fetch_article(item["url"])
-                if item.get("slug_title") and article.get("title"):
-                    item["title"] = article["title"]
-                item["author"] = item["author"] or article.get("author") or ""
-                item["published"] = item["published"] or article.get("date")
-                image = article.get("image") or item.get("image")
-                item["image"] = image if image and image.startswith("https://") else None
-                words = len((article.get("text") or "").split())
-                item["read_minutes"] = max(1, round(words / 230)) if words > 150 else None
+                enrich_item(item, article)
                 summary = summarize(client, config, item, article)
                 if summary is None:
                     continue
@@ -494,6 +513,8 @@ def main():
     parser.add_argument("--check-feeds", action="store_true")
     parser.add_argument("--test-limit", type=int, help="with --dry-run: skip seeding and age limits, "
                         "take the N newest items from every source (to preview output)")
+    parser.add_argument("--sample", metavar="SOURCE_NAME",
+                        help="post the newest article from this source to Slack, to preview formatting")
     args = parser.parse_args()
 
     config = yaml.safe_load(CONFIG_PATH.read_text())
@@ -512,11 +533,14 @@ def main():
         # Org-level API keys (not tied to a workspace) must name the workspace on every request.
         workspace = os.environ.get("ANTHROPIC_WORKSPACE_ID")
         client = anthropic.Anthropic(default_headers={"anthropic-workspace-id": workspace} if workspace else None)
+        if args.sample:
+            post_sample(config, client, Slack(token, args.dry_run), args.sample)
+            return
         run(config, state, client, Slack(token, args.dry_run), now,
             args.test_limit if args.dry_run else None)
     finally:
         # save progress even if something failed midway, so posted items aren't re-posted
-        if not args.dry_run:
+        if not args.dry_run and not args.sample:
             save_state(state)
 
 
