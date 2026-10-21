@@ -122,7 +122,7 @@ def fetch_source(source):
     for e in feed.entries:
         if not e.get("link"):
             continue
-        title = strip_html(e.get("title", ""))
+        title = re.sub(r"\s+via @\S+(,\s*@\S+)*$", "", strip_html(e.get("title", "")))  # SEJ appends "via @handles"
         suffix = source.get("strip_title_suffix")
         if suffix and title.endswith(suffix):
             title = title[: -len(suffix)]
@@ -436,7 +436,8 @@ def run(config, state, client, slack, now, test_limit=None):
         for channel, queue in state["digest_queue"].items():
             if not queue or state["digest_sent"].get(channel) == today or channel not in channel_ids:
                 continue
-            top = sorted(queue, key=lambda i: -i["score"])[: s["digest_max_items"]]
+            unique = {i["title"].strip().lower(): i for i in sorted(queue, key=lambda i: i["score"])}
+            top = sorted(unique.values(), key=lambda i: -i["score"])[: s["digest_max_items"]]
             try:
                 slack.post(channel_ids[channel], "Also worth a look", digest_blocks(top, tz, now))
             except RuntimeError as exc:
