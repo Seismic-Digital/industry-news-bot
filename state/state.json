@@ -1,12 +1,5 @@
 {
- "daily_counts": {
-  "2026-10-20": {},
-  "2026-10-21": {
-   "ai": 3,
-   "paid_media": 3,
-   "seo": 1
-  }
- },
+ "daily_counts": {},
  "digest_queue": {
   "ai": [
    {
@@ -169,57 +162,7 @@
   ]
  },
  "digest_sent": {},
- "posted": [
-  {
-   "at": "2026-10-21T15:01:21.247025+00:00",
-   "channel": "paid_media",
-   "id": "2fdbf3dc9195333d",
-   "title": "ChatGPT Ads to enable creative enhancements on October 30",
-   "ts": "1792594951.384859"
-  },
-  {
-   "at": "2026-10-21T15:01:21.247025+00:00",
-   "channel": "seo",
-   "id": "cd699922db82fca2",
-   "title": "Google Search Ranking Volatility & Chatter Heats Up October 20 & 21",
-   "ts": "1792594956.692729"
-  },
-  {
-   "at": "2026-10-21T15:01:21.247025+00:00",
-   "channel": "paid_media",
-   "id": "877c95210f4249fb",
-   "title": "Google Ads New: Save & Test Asset Group Changes",
-   "ts": "1792594962.251989"
-  },
-  {
-   "at": "2026-10-21T15:01:21.247025+00:00",
-   "channel": "paid_media",
-   "id": "7d8f38c23150613d",
-   "title": "Google Ads Updates Smart Bidding Learning Doc With 7-Day Limit & Best Practices",
-   "ts": "1792594966.415569"
-  },
-  {
-   "at": "2026-10-21T15:01:21.247025+00:00",
-   "channel": "ai",
-   "id": "08ab3c5cae7e038e",
-   "title": "AI Overviews have nearly doubled across five commercial search modifiers",
-   "ts": "1792594971.198959"
-  },
-  {
-   "at": "2026-10-21T15:01:21.247025+00:00",
-   "channel": "ai",
-   "id": "74fcf21eca7add4a",
-   "title": "ChatGPT Ads expands to 26 new countries as over 100,000 advertisers have used the platform",
-   "ts": "1792594975.232819"
-  },
-  {
-   "at": "2026-10-21T15:01:21.247025+00:00",
-   "channel": "ai",
-   "id": "edef63b51aedc012",
-   "title": "How we built ChatGPT\u2019s novel ad stack for user trust and relevance",
-   "ts": "1792594981.272699"
-  }
- ],
+ "posted": [],
  "seeded_sources": [
   "Google Search Central Blog",
   "Google Search Status Dashboard",

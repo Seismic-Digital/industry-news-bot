@@ -16,19 +16,19 @@ settings:
 # slack_channel must be the channel ID (right-click channel > View channel details > bottom of About tab).
 channels:
   seo:
-    slack_channel: "C0CATNKAAM7"
+    slack_channel: "C0CAAE82C0P"
     focus: >-
       Organic search: Google and Bing algorithm and core updates, ranking volatility,
       Search Central documentation and policy changes, Search Console, technical SEO,
       local SEO and Google Business Profile, SERP feature changes, content and link strategy.
   paid_media:
-    slack_channel: "C0CATNKAAM7"
+    slack_channel: "C0CBL705EAU"
     focus: >-
       Paid media: Google Ads, Microsoft Advertising, Meta, LinkedIn, TikTok, Amazon Ads,
       programmatic/DSPs (StackAdapt, CTV, display). New ad products and features, bidding,
       Performance Max, measurement and attribution, policy changes, audience and privacy changes.
   ai:
-    slack_channel: "C0CATNKAAM7"
+    slack_channel: "C0CARL1QW3U"
     focus: >-
       AI and AI search: major LLM and model releases (OpenAI, Anthropic, Google Gemini, Meta,
       Microsoft), Google AI Overviews and AI Mode, ChatGPT/Perplexity/Copilot search, and
