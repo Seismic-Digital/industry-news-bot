@@ -133,8 +133,20 @@ def fetch_source(source):
             "snippet": strip_html(e.get("summary", ""))[:600],
             "author": strip_html(e.get("author", "")),
             "published": datetime(*published[:6], tzinfo=timezone.utc).isoformat() if published else None,
+            "image": feed_image(e),
         })
     return items
+
+
+def feed_image(entry):
+    """Image URL from the feed entry's media tags or enclosures, if it has one."""
+    for media in entry.get("media_content", []) + entry.get("media_thumbnail", []):
+        if media.get("url") and media.get("medium", "image") == "image":
+            return media["url"]
+    for enc in entry.get("enclosures", []):
+        if enc.get("type", "").startswith("image/") and enc.get("href"):
+            return enc["href"]
+    return None
 
 
 def fetch_article(url):
@@ -276,14 +288,20 @@ def article_blocks(item, summary, tz, breaking):
     if item.get("read_minutes"):
         meta.append(f"{item['read_minutes']} min read")
     tags = " · ".join(summary["tags"])
-    return [
+    blocks = [
         {"type": "section", "text": {"type": "mrkdwn", "text": f"{icon} *<{item['url']}|{esc(item['title'])}>*"}},
         {"type": "context", "elements": [{"type": "mrkdwn", "text": esc(" · ".join(meta))}]},
+    ]
+    if item.get("image"):
+        blocks.append({"type": "image", "image_url": item["image"], "alt_text": item["title"][:2000]})
+    blocks += [
         {"type": "section", "text": {"type": "mrkdwn", "text": esc(summary["summary"])}},
         {"type": "section", "text": {"type": "mrkdwn", "text": f"*Why it matters:* {esc(summary['why_it_matters'])}"}},
         {"type": "context", "elements": [{"type": "mrkdwn",
                                           "text": f"🏷️ {esc(tags)}    Relevance: {item['score']}/5"}]},
+        {"type": "divider"},
     ]
+    return blocks
 
 
 def digest_blocks(items, tz, now):
@@ -306,6 +324,10 @@ class Slack:
             for b in blocks or []:
                 if "text" in b:
                     print(b["text"]["text"])
+                elif b["type"] == "image":
+                    print(f"[image: {b['image_url']}]")
+                elif b["type"] == "divider":
+                    print("─" * 40)
                 for el in b.get("elements", []):
                     print(el["text"])
             if not blocks:
@@ -319,6 +341,12 @@ class Slack:
         resp = requests.post("https://slack.com/api/chat.postMessage", json=payload, timeout=20,
                              headers={"Authorization": f"Bearer {self.token}"})
         data = resp.json()
+        if data.get("error") == "invalid_blocks" and any(b["type"] == "image" for b in payload.get("blocks", [])):
+            # Slack couldn't download the image (blocked, too big, bad URL); post without it
+            payload["blocks"] = [b for b in payload["blocks"] if b["type"] != "image"]
+            resp = requests.post("https://slack.com/api/chat.postMessage", json=payload, timeout=20,
+                                 headers={"Authorization": f"Bearer {self.token}"})
+            data = resp.json()
         if not data.get("ok"):
             raise RuntimeError(f"Slack error posting to {channel}: {data.get('error')}")
         return data["ts"]
@@ -408,6 +436,8 @@ def run(config, state, client, slack, now, test_limit=None):
                     item["title"] = article["title"]
                 item["author"] = item["author"] or article.get("author") or ""
                 item["published"] = item["published"] or article.get("date")
+                image = article.get("image") or item.get("image")
+                item["image"] = image if image and image.startswith("https://") else None
                 words = len((article.get("text") or "").split())
                 item["read_minutes"] = max(1, round(words / 230)) if words > 150 else None
                 summary = summarize(client, config, item, article)
