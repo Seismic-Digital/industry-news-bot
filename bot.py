@@ -288,13 +288,12 @@ def article_blocks(item, summary, tz, breaking):
     if item.get("read_minutes"):
         meta.append(f"{item['read_minutes']} min read")
     tags = " · ".join(summary["tags"])
-    blocks = [
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"{icon} *<{item['url']}|{esc(item['title'])}>*"}},
-        {"type": "context", "elements": [{"type": "mrkdwn", "text": esc(" · ".join(meta))}]},
-    ]
+    blocks = []
     if item.get("image"):
         blocks.append({"type": "image", "image_url": item["image"], "alt_text": item["title"][:2000]})
     blocks += [
+        {"type": "section", "text": {"type": "mrkdwn", "text": f"{icon} *<{item['url']}|{esc(item['title'])}>*"}},
+        {"type": "context", "elements": [{"type": "mrkdwn", "text": esc(" · ".join(meta))}]},
         {"type": "section", "text": {"type": "mrkdwn", "text": esc(summary["summary"])}},
         {"type": "section", "text": {"type": "mrkdwn", "text": f"*Why it matters:* {esc(summary['why_it_matters'])}"}},
         {"type": "context", "elements": [{"type": "mrkdwn",
