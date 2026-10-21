@@ -1,5 +1,6 @@
-anthropic>=0.60
-feedparser>=6.0
-requests>=2.32
-trafilatura>=2.0
-PyYAML>=6.0
+# Pinned to known-good versions so a new library release can't break scheduled runs.
+anthropic==1.17.0
+feedparser>=6.0,<7
+requests>=2.32,<3
+trafilatura>=2.0,<3
+PyYAML>=6.0,<7
