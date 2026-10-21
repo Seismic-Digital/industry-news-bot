@@ -2,9 +2,7 @@ name: Industry news bot
 
 on:
   schedule:
-    # Backup only: GitHub often skips scheduled runs (we saw gaps of 2.5-5 hours), so the main
-    # trigger is an external scheduler (cron-job.org) calling workflow_dispatch every 30 min.
-    # Off-peak minutes make GitHub a little less likely to drop these.
+    # Off-peak minutes: GitHub drops the most scheduled runs at :00 and :30.
     - cron: "7,37 * * * *"
   workflow_dispatch:          # "Run workflow" button for manual runs
     inputs:
