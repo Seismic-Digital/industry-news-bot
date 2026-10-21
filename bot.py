@@ -373,6 +373,7 @@ def run(config, state, client, slack, now, test_limit=None):
     if items:
         verdicts = triage(client, config, items, state["posted"])
         posted_by_id = {p["id"]: p for p in state["posted"]}
+        broken_channels = set()  # Slack rejected these this run; their items stay unseen and retry next run
         # originals first, so duplicates in the same batch can thread under them
         items.sort(key=lambda i: bool(verdicts.get(i["id"], {}).get("duplicate_of")))
 
@@ -396,6 +397,9 @@ def run(config, state, client, slack, now, test_limit=None):
             if v["duplicate_of"]:
                 continue  # duplicate of something we didn't post; skip it too
 
+            if channel in broken_channels:
+                del state["seen"][item["id"]]
+                continue
             breaking = score >= s["breaking_score"]
             under_cap = counts.get(channel, 0) < s["daily_realtime_cap"]
             if breaking or (score >= s["realtime_score"] and under_cap):
@@ -409,7 +413,13 @@ def run(config, state, client, slack, now, test_limit=None):
                 summary = summarize(client, config, item, article)
                 if summary is None:
                     continue
-                ts = slack.post(channel_ids[channel], item["title"], article_blocks(item, summary, tz, breaking))
+                try:
+                    ts = slack.post(channel_ids[channel], item["title"], article_blocks(item, summary, tz, breaking))
+                except RuntimeError as exc:
+                    log(f"SLACK ERROR [{channel}]: {exc}")
+                    broken_channels.add(channel)
+                    del state["seen"][item["id"]]
+                    continue
                 counts[channel] = counts.get(channel, 0) + 1
                 post = {"id": item["id"], "channel": channel, "title": item["title"], "ts": ts, "at": now.isoformat()}
                 state["posted"].append(post)
@@ -427,7 +437,11 @@ def run(config, state, client, slack, now, test_limit=None):
             if not queue or state["digest_sent"].get(channel) == today or channel not in channel_ids:
                 continue
             top = sorted(queue, key=lambda i: -i["score"])[: s["digest_max_items"]]
-            slack.post(channel_ids[channel], "Also worth a look", digest_blocks(top, tz, now))
+            try:
+                slack.post(channel_ids[channel], "Also worth a look", digest_blocks(top, tz, now))
+            except RuntimeError as exc:
+                log(f"SLACK ERROR [{channel}] digest: {exc}")
+                continue
             state["digest_sent"][channel] = today
             state["digest_queue"][channel] = []
             log(f"Posted digest to {channel} ({len(top)} items)")
