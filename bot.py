@@ -464,7 +464,10 @@ def main():
         sys.exit("SLACK_BOT_TOKEN is not set")
 
     try:
-        run(config, state, anthropic.Anthropic(), Slack(token, args.dry_run), now,
+        # Org-level API keys (not tied to a workspace) must name the workspace on every request.
+        workspace = os.environ.get("ANTHROPIC_WORKSPACE_ID")
+        client = anthropic.Anthropic(default_headers={"anthropic-workspace-id": workspace} if workspace else None)
+        run(config, state, client, Slack(token, args.dry_run), now,
             args.test_limit if args.dry_run else None)
     finally:
         # save progress even if something failed midway, so posted items aren't re-posted
