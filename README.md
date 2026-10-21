@@ -1,6 +1,6 @@
 # Industry News Bot
 
-Pulls new articles from ~36 SEO, paid media, and AI sources every 30 minutes, has Claude score and summarize them, and posts them to Slack.
+Pulls new articles from ~36 SEO, paid media, and AI sources every 15 minutes, has Claude score and summarize them, and posts them to Slack.
 
 ## How posting works
 
@@ -44,13 +44,23 @@ You can change all of these limits in `settings` at the top of `sources.yaml`.
    - The bot can post to public channels without being invited. For a private channel, run `/invite @Industry News` in it first.
 
 ### 2. GitHub
-1. Create a **private** repo and push this folder to it.
+1. Create a **public** repo and push this folder to it (public repos get free Actions minutes, which the always-on loop needs; secrets stay hidden).
 2. Go to repo **Settings → Secrets and variables → Actions** and add two secrets:
    - `ANTHROPIC_API_KEY`: from https://console.anthropic.com
    - `SLACK_BOT_TOKEN`: the `xoxb-...` token
-3. Go to the **Actions** tab → **Industry news bot** → **Run workflow** to start the first run by hand.
+3. Go to the **Actions** tab → **Industry news bot** → **Run workflow** to start the bot.
 
 **First run:** every source's existing articles are marked as already seen and nothing is posted. Posts start with the next article published after that. The same thing happens automatically whenever you add a source later, so a new source never floods a channel.
+
+## How it stays running
+GitHub's built-in schedule skipped hours at a time in testing, so the bot doesn't rely on it.
+Each GitHub Actions run stays open for about 5.5 hours, checking for news at :00, :15, :30, and :45,
+then starts its own replacement. A backup schedule every 3 hours restarts the chain if it ever breaks.
+
+- **Changes to `bot.py` or `sources.yaml`** are picked up at the next 15-minute check (the loop pulls the latest code each time). Changes to `requirements.txt` take effect at the next 5.5-hour restart.
+- **To stop the bot:** cancel the running run in the Actions tab (that stops the chain), then click **⋯ → Disable workflow** so the backup schedule doesn't restart it.
+- **To post a sample:** Run workflow with a source name in `sample_source`. Samples run separately and don't interrupt the loop.
+- **Failure emails:** if any check during a 5.5-hour run fails, that run is marked failed when it ends, so you get at most one email per run.
 
 ## Running locally
 
