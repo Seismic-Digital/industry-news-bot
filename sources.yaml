@@ -3,7 +3,7 @@
 # after adding a source quietly marks its existing articles as seen, so it never floods.
 
 settings:
-  model: claude-opus-5-5        # switch to claude-haiku-5-5 to cut API cost ~95%
+  model: claude-haiku-5-5       # ~40x cheaper per token than claude-opus-5-5
   timezone: America/Chicago
   max_item_age_hours: 48        # ignore feed items older than this
   min_score: 3                  # relevance 1-5; below this the item is dropped
