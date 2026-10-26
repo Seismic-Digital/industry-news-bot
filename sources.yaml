@@ -12,6 +12,7 @@ settings:
   daily_realtime_cap: 8         # max real-time posts per channel per day
   digest_hour: 16               # local hour for the daily "also worth a look" roundup
   digest_max_items: 10
+  sample_channel: "C0CATNKAAM7"  # #news-test; "Run workflow" samples post here, never to the real channels
 
 # slack_channel must be the channel ID (right-click channel > View channel details > bottom of About tab).
 channels:

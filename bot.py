@@ -400,7 +400,7 @@ def enrich_item(item, article):
 
 
 def post_sample(config, client, slack, source_name):
-    """Post the newest article from one source to its first channel, to preview formatting. State is untouched."""
+    """Post the newest article from one source to the sample channel, to preview formatting. State is untouched."""
     source = next(src for src in config["sources"] if src["name"] == source_name)
     item = fetch_source(source)[0]
     channel = source["channels"][0]
@@ -409,7 +409,7 @@ def post_sample(config, client, slack, source_name):
     enrich_item(item, article)
     summary = summarize(client, config, item, article)
     tz = ZoneInfo(config["settings"]["timezone"])
-    slack.post(config["channels"][channel]["slack_channel"], item["title"], article_blocks(item, summary, tz, False))
+    slack.post(config["settings"]["sample_channel"], item["title"], article_blocks(item, summary, tz, False))
     log(f"Posted sample [{channel}] {item['title']}")
 
 
